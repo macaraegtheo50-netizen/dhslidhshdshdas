@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stall Management - Permanent Storage</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #eef2f3; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #444; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus { border-color: #007bff; outline: none; }
+        
+        .button-group { display: flex; gap: 10px; margin: 25px 0; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .btn-add { background-color: #27ae60; }
+        .btn-update { background-color: #2980b9; }
+        .btn-delete { background-color: #c0392b; }
+        button:hover { filter: brightness(90%); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; }
+        th, td { border: 1px solid #eee; padding: 15px; text-align: left; }
+        th { background-color: #34495e; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; cursor: pointer; }
+        .selected { background-color: #d1ecf1 !important; border: 2px solid #0c5460; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Stall Management System</h2>
+    
+    <div class="input-group">
+        <label>Stall No.</label>
+        <input type="text" id="stallNo" placeholder="e.g. B-205">
+    </div>
+    <div class="input-group">
+        <label>Name of Owner</label>
+        <input type="text" id="ownerName" placeholder="Owner's Name">
+    </div>
+    <div class="input-group">
+        <label>Phone Number</label>
+        <input type="tel" id="phoneNo" placeholder="Phone Number">
+    </div>
+
+    <div class="button-group">
+        <button class="btn-add" onclick="addData()">Add</button>
+        <button class="btn-update" onclick="updateData()">Update</button>
+        <button class="btn-delete" onclick="deleteData()">Delete</button>
+    </div>
+
+    <table id="recordTable">
+        <thead>
+            <tr>
+                <th>Stall No.</th>
+                <th>Owner</th>
+                <th>Phone</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    let stallData = JSON.parse(localStorage.getItem('stalls')) || [];
+    let selectedIndex = null;
+
+    // Load data on startup
+    window.onload = displayData;
+
+    function displayData() {
+        const tbody = document.querySelector("#recordTable tbody");
+        tbody.innerHTML = "";
+        
+        stallData.forEach((item, index) => {
+            let row = tbody.insertRow();
+            row.onclick = () => selectRow(index);
+            if(selectedIndex === index) row.classList.add('selected');
+            
+            row.insertCell(0).innerHTML = item.stall;
+            row.insertCell(1).innerHTML = item.owner;
+            row.insertCell(2).innerHTML = item.phone;
+        });
+    }
+
+    function addData() {
+        const stall = document.getElementById("stallNo").value;
+        const owner = document.getElementById("ownerName").value;
+        const phone = document.getElementById("phoneNo").value;
+
+        if(stall && owner && phone) {
+            stallData.push({ stall, owner, phone });
+            saveAndRefresh();
+        } else {
+            alert("Please fill all fields!");
+        }
+    }
+
+    function selectRow(index) {
+        selectedIndex = index;
+        const item = stallData[index];
+        document.getElementById("stallNo").value = item.stall;
+        document.getElementById("ownerName").value = item.owner;
+        document.getElementById("phoneNo").value = item.phone;
+        displayData(); // Refresh to show highlight
+    }
+
+    function updateData() {
+        if (selectedIndex !== null) {
+            stallData[selectedIndex] = {
+                stall: document.getElementById("stallNo").value,
+                owner: document.getElementById("ownerName").value,
+                phone: document.getElementById("phoneNo").value
+            };
+            selectedIndex = null;
+            saveAndRefresh();
+        } else {
+            alert("Select a row first!");
+        }
+    }
+
+    function deleteData() {
+        if (selectedIndex !== null) {
+            stallData.splice(selectedIndex, 1);
+            selectedIndex = null;
+            saveAndRefresh();
+        } else {
+            alert("Select a row first!");
+        }
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('stalls', JSON.stringify(stallData));
+        displayData();
+        clearInputs();
+    }
+
+    function clearInputs() {
+        document.getElementById("stallNo").value = "";
+        document.getElementById("ownerName").value = "";
+        document.getElementById("phoneNo").value = "";
+    }
+</script>
+
+</body>
+</html>
